@@ -21,9 +21,6 @@ type CourtPreviewProps = {
   selectedColor: string;
   fillColors: { [sport: string]: { [area: string]: string } };
   handleFill: (areaId: string) => void;
-  setSelectedColor: (color: string) => void;
-  colors: string[];
-  fillColorsPalette: string[];
   drawingCanvasRef: React.RefObject<any>;
 };
 
@@ -35,9 +32,6 @@ const CourtPreview = ({
   selectedColor,
   fillColors,
   handleFill,
-  setSelectedColor,
-  colors,
-  fillColorsPalette,
   drawingCanvasRef,
 }: CourtPreviewProps) => {
   const colorScheme = useColorScheme();

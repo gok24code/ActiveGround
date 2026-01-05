@@ -1,3 +1,4 @@
+import ColorSlider from "@/components/ColorSlider";
 import CourtPreview from "@/components/CourtPreview";
 import DrawingCanvas from "@/components/DrawingCanvas";
 import { Colors, SportColors } from "@/constants/Theme";
@@ -21,7 +22,7 @@ export default function Index() {
   // States for Drawing and Fill modes
   const [isDrawingMode, setDrawingMode] = useState(false);
   const [isFillMode, setFillMode] = useState(false);
-  const [selectedColor, setSelectedColor] = useState("red");
+  const [selectedColor, setSelectedColor] = useState("hsla(0, 100%, 50%, 1)"); // Default to a red hue, full opacity
   const [fillColors, setFillColors] = useState<{
     [sport: string]: { [area: string]: string };
   }>({});
@@ -30,15 +31,6 @@ export default function Index() {
   const drawingCanvasRef = useRef<any>(null);
   const clearButtonAnim = useRef(new Animated.Value(0)).current;
   const paletteAnim = useRef(new Animated.Value(0)).current;
-
-  const colors = ["red", "blue", "green", "yellow", "white"]; // Drawing colors
-  const fillColorsPalette = [
-    "#FF000055",
-    "#0000FF55",
-    "#00FF0055",
-    "#FFFF0055",
-    "#ffffff75",
-  ]; // Fill colors
 
   useEffect(() => {
     Animated.timing(clearButtonAnim, {
@@ -49,12 +41,13 @@ export default function Index() {
   }, [isFillMode]);
 
   useEffect(() => {
+    const showPalette = isDrawingMode || isFillMode || isCustomMode;
     Animated.timing(paletteAnim, {
-      toValue: isDrawingMode || isFillMode ? 1 : 0,
+      toValue: showPalette ? 1 : 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [isDrawingMode, isFillMode]);
+  }, [isDrawingMode, isFillMode, isCustomMode]);
 
   const handleSportSelection = (sport: string) => {
     setSelectedSport(sport);
@@ -136,12 +129,7 @@ export default function Index() {
     return styles.buttonText;
   };
 
-  const activeColor =
-    selectedSport && !isCustomMode
-      ? SportColors[selectedSport as keyof typeof SportColors].primary
-      : colorScheme === "dark"
-      ? Colors.dark.icon
-      : Colors.light.icon;
+  const iconColor = colorScheme === "dark" ? Colors.dark.text : Colors.light.text;
 
   const styles = StyleSheet.create({
     container: {
@@ -189,7 +177,7 @@ export default function Index() {
       borderWidth: 2,
       borderRadius: 10,
       margin: 20,
-      borderColor: activeColor,
+      borderColor: colorScheme === "dark" ? Colors.dark.text : Colors.light.text, // Static border color
       backgroundColor:
         colorScheme === "dark"
           ? Colors.dark.background
@@ -216,25 +204,14 @@ export default function Index() {
     },
     colorPalette: {
       position: "absolute",
-      bottom: 150, // Position above the bottom buttons
+      bottom: 150,
       left: 20,
       right: 20,
-      flexDirection: "row",
-      justifyContent: "space-evenly",
-      padding: 10,
+      paddingHorizontal: 10,
+      paddingVertical: 10,
       backgroundColor:
-        colorScheme === "dark" ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.7)",
+        colorScheme === "dark" ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)",
       borderRadius: 20,
-    },
-    colorOption: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-    },
-    selectedColor: {
-      borderWidth: 2,
-      borderColor:
-        colorScheme === "dark" ? Colors.dark.text : Colors.light.text,
     },
   });
 
@@ -276,9 +253,6 @@ export default function Index() {
           selectedColor={selectedColor}
           fillColors={fillColors}
           handleFill={handleFill}
-          setSelectedColor={setSelectedColor}
-          colors={colors}
-          fillColorsPalette={fillColorsPalette}
           drawingCanvasRef={drawingCanvasRef}
         />
       )}
@@ -292,32 +266,24 @@ export default function Index() {
             <TouchableOpacity
               style={[
                 styles.modeButton,
-                isDrawingMode ? { backgroundColor: "blue" } : {},
+                isDrawingMode ? { backgroundColor: selectedColor } : {},
               ]}
               onPress={handleToggleDrawingMode}
             >
               <Ionicons
                 name={isDrawingMode ? "trash" : "pencil"}
                 size={24}
-                color={
-                  colorScheme === "dark" ? Colors.dark.text : Colors.light.text
-                }
+                color={iconColor}
               />
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.modeButton,
-                isFillMode ? { backgroundColor: "blue" } : {},
+                isFillMode ? { backgroundColor: selectedColor } : {},
               ]}
               onPress={handleToggleFillMode}
             >
-              <Ionicons
-                name={"color-palette"}
-                size={24}
-                color={
-                  colorScheme === "dark" ? Colors.dark.text : Colors.light.text
-                }
-              />
+              <Ionicons name={"color-palette"} size={24} color={iconColor} />
             </TouchableOpacity>
             <Animated.View
               style={{
@@ -333,15 +299,7 @@ export default function Index() {
                 style={styles.modeButton}
                 onPress={handleClearFill}
               >
-                <Ionicons
-                  name={"trash-bin-outline"}
-                  size={24}
-                  color={
-                    colorScheme === "dark"
-                      ? Colors.dark.text
-                      : Colors.light.text
-                  }
-                />
+                <Ionicons name={"trash-bin-outline"} size={24} color={iconColor} />
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -369,38 +327,21 @@ export default function Index() {
               {
                 translateY: paletteAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [100, 0],
+                  outputRange: [200, 0],
                 }),
               },
             ],
+            pointerEvents:
+              isDrawingMode || isFillMode || isCustomMode ? "auto" : "none",
           },
         ]}
       >
-        {(isDrawingMode || isCustomMode) &&
-          colors.map((color) => (
-            <TouchableOpacity
-              key={color}
-              style={[
-                styles.colorOption,
-                { backgroundColor: color },
-                selectedColor === color && styles.selectedColor,
-              ]}
-              onPress={() => setSelectedColor(color)}
-            />
-          ))}
-        {isFillMode &&
-          !isCustomMode &&
-          fillColorsPalette.map((color) => (
-            <TouchableOpacity
-              key={color}
-              style={[
-                styles.colorOption,
-                { backgroundColor: color },
-                selectedColor === color && styles.selectedColor,
-              ]}
-              onPress={() => setSelectedColor(color)}
-            />
-          ))}
+        {(isDrawingMode || isCustomMode) && (
+          <ColorSlider onColorChange={setSelectedColor} opacity={1} selectedColor={selectedColor} />
+        )}
+        {isFillMode && !isCustomMode && (
+          <ColorSlider onColorChange={setSelectedColor} opacity={0.4} selectedColor={selectedColor} />
+        )}
       </Animated.View>
 
       {!isCustomMode && (
