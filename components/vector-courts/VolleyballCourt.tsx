@@ -1,7 +1,14 @@
 import React from "react";
 import Svg, { Path, Rect } from "react-native-svg";
 
-const VolleyballCourt = ({
+interface VolleyballCourtProps {
+  onPress: (zoneId: string) => void;
+  fillColors?: Record<string, string>;
+  width?: string;
+  height?: string;
+}
+
+const VolleyballCourt: React.FC<VolleyballCourtProps> = ({
   onPress,
   fillColors = {},
   width = "100%",
@@ -54,8 +61,8 @@ const VolleyballCourt = ({
         y={attackLineOffset}
         width={courtWidth}
         height={halfCourt - attackLineOffset}
-        fill={fillColors['fill-top-attack'] || 'transparent'}
-        onPress={() => onPress('fill-top-attack')}
+        fill={fillColors["fill-top-attack"] || "transparent"}
+        onPress={() => onPress("fill-top-attack")}
       />
       <Rect // Top back zone
         id="top-back"
@@ -63,8 +70,8 @@ const VolleyballCourt = ({
         y="0"
         width={courtWidth}
         height={attackLineOffset}
-        fill={fillColors['fill-top-back'] || 'transparent'}
-        onPress={() => onPress('fill-top-back')}
+        fill={fillColors["fill-top-back"] || "transparent"}
+        onPress={() => onPress("fill-top-back")}
       />
       <Rect // Bottom attack zone
         id="bottom-attack"
@@ -72,8 +79,8 @@ const VolleyballCourt = ({
         y={halfCourt}
         width={courtWidth}
         height={halfCourt - attackLineOffset}
-        fill={fillColors['fill-bottom-attack'] || 'transparent'}
-        onPress={() => onPress('fill-bottom-attack')}
+        fill={fillColors["fill-bottom-attack"] || "transparent"}
+        onPress={() => onPress("fill-bottom-attack")}
       />
       <Rect // Bottom back zone
         id="bottom-back"
@@ -81,8 +88,8 @@ const VolleyballCourt = ({
         y={halfCourt + halfCourt - attackLineOffset}
         width={courtWidth}
         height={attackLineOffset}
-        fill={fillColors['fill-bottom-back'] || 'transparent'}
-        onPress={() => onPress('fill-bottom-back')}
+        fill={fillColors["fill-bottom-back"] || "transparent"}
+        onPress={() => onPress("fill-bottom-back")}
       />
     </Svg>
   );

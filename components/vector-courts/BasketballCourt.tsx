@@ -1,11 +1,22 @@
-import React from 'react';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import React from "react";
+import Svg, { Circle, Path, Rect } from "react-native-svg";
 
-const BasketballCourt = ({
+interface FillColors {
+  [key: string]: string;
+}
+
+interface BasketballCourtProps {
+  onPress: (areaId: string) => void;
+  fillColors?: FillColors;
+  width?: string;
+  height?: string;
+}
+
+const BasketballCourt: React.FC<BasketballCourtProps> = ({
   onPress,
-  fillColors = {},
-  width = '100%',
-  height = '100%',
+  fillColors = {} as FillColors,
+  width = "100%",
+  height = "100%",
 }) => {
   // --- Dimensions based on 15m x 28m court ---
   const courtWidth = 150;
@@ -22,14 +33,31 @@ const BasketballCourt = ({
   const restrictedRadius = 12.5;
 
   // --- Path Calculations ---
-  const top3PtArcY = hoopCenterY + Math.sqrt(Math.max(0, threePointRadius**2 - (courtWidth/2 - threePointLineX)**2));
-  const bottom3PtArcY = (courtHeight - hoopCenterY) - Math.sqrt(Math.max(0, threePointRadius**2 - (courtWidth/2 - threePointLineX)**2));
+  const top3PtArcY =
+    hoopCenterY +
+    Math.sqrt(
+      Math.max(
+        0,
+        threePointRadius ** 2 - (courtWidth / 2 - threePointLineX) ** 2
+      )
+    );
+  const bottom3PtArcY =
+    courtHeight -
+    hoopCenterY -
+    Math.sqrt(
+      Math.max(
+        0,
+        threePointRadius ** 2 - (courtWidth / 2 - threePointLineX) ** 2
+      )
+    );
 
   // Path for the area inside the top 3-point line
   const top3ptAreaPath = `
     M ${threePointLineX},0 
     L ${threePointLineX},${top3PtArcY} 
-    A ${threePointRadius},${threePointRadius} 0 0 0 ${courtWidth - threePointLineX},${top3PtArcY}
+    A ${threePointRadius},${threePointRadius} 0 0 0 ${
+    courtWidth - threePointLineX
+  },${top3PtArcY}
     L ${courtWidth - threePointLineX},0 
     Z
   `;
@@ -38,13 +66,19 @@ const BasketballCourt = ({
   const bottom3ptAreaPath = `
     M ${threePointLineX},${courtHeight}
     L ${threePointLineX},${bottom3PtArcY}
-    A ${threePointRadius},${threePointRadius} 0 0 1 ${courtWidth - threePointLineX},${bottom3PtArcY}
+    A ${threePointRadius},${threePointRadius} 0 0 1 ${
+    courtWidth - threePointLineX
+  },${bottom3PtArcY}
     L ${courtWidth - threePointLineX},${courtHeight}
     Z
   `;
 
   return (
-    <Svg width={width} height={height} viewBox={`0 0 ${courtWidth} ${courtHeight}`}>
+    <Svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${courtWidth} ${courtHeight}`}
+    >
       {/* --- Court Lines (drawn first for visual reference) --- */}
       <Rect // Court Outline
         x="0"
@@ -53,7 +87,7 @@ const BasketballCourt = ({
         height={courtHeight}
         stroke="white"
         strokeWidth="2"
-        fill="none" 
+        fill="none"
       />
       <Path // Center Line
         d={`M 0 ${courtHeight / 2} H ${courtWidth}`}
@@ -82,7 +116,9 @@ const BasketballCourt = ({
         d={`
           M ${threePointLineX},0 
           L ${threePointLineX},${top3PtArcY}
-          A ${threePointRadius},${threePointRadius} 0 0 0 ${courtWidth - threePointLineX},${top3PtArcY}
+          A ${threePointRadius},${threePointRadius} 0 0 0 ${
+          courtWidth - threePointLineX
+        },${top3PtArcY}
           L ${courtWidth - threePointLineX},0
         `}
         stroke="white"
@@ -90,7 +126,11 @@ const BasketballCourt = ({
         fill="none"
       />
       <Path // Top Restricted Area Arc
-        d={`M ${courtWidth/2 - restrictedRadius},${hoopCenterY} A ${restrictedRadius},${restrictedRadius} 0 0 1 ${courtWidth/2 + restrictedRadius},${hoopCenterY}`}
+        d={`M ${
+          courtWidth / 2 - restrictedRadius
+        },${hoopCenterY} A ${restrictedRadius},${restrictedRadius} 0 0 1 ${
+          courtWidth / 2 + restrictedRadius
+        },${hoopCenterY}`}
         stroke="white"
         strokeWidth="2"
         fill="none"
@@ -105,11 +145,13 @@ const BasketballCourt = ({
         strokeWidth="2"
         fill="none"
       />
-       <Path // Bottom 3-Point Line
+      <Path // Bottom 3-Point Line
         d={`
           M ${threePointLineX},${courtHeight}
           L ${threePointLineX},${bottom3PtArcY}
-          A ${threePointRadius},${threePointRadius} 0 0 1 ${courtWidth - threePointLineX},${bottom3PtArcY}
+          A ${threePointRadius},${threePointRadius} 0 0 1 ${
+          courtWidth - threePointLineX
+        },${bottom3PtArcY}
           L ${courtWidth - threePointLineX},${courtHeight}
         `}
         stroke="white"
@@ -117,12 +159,16 @@ const BasketballCourt = ({
         fill="none"
       />
       <Path // Bottom Restricted Area Arc
-        d={`M ${courtWidth/2 - restrictedRadius},${courtHeight - hoopCenterY} A ${restrictedRadius},${restrictedRadius} 0 0 0 ${courtWidth/2 + restrictedRadius},${courtHeight - hoopCenterY}`}
+        d={`M ${courtWidth / 2 - restrictedRadius},${
+          courtHeight - hoopCenterY
+        } A ${restrictedRadius},${restrictedRadius} 0 0 0 ${
+          courtWidth / 2 + restrictedRadius
+        },${courtHeight - hoopCenterY}`}
         stroke="white"
         strokeWidth="2"
         fill="none"
       />
-      
+
       {/* --- Fillable Areas (Layered from largest to smallest) --- */}
       <Rect // Top Outer Area
         id="top-outer"
@@ -130,27 +176,27 @@ const BasketballCourt = ({
         y="0"
         width={courtWidth}
         height={courtHeight / 2}
-        fill={fillColors['fill-top-outer'] || 'transparent'}
-        onPress={() => onPress('fill-top-outer')}
+        fill={fillColors["fill-top-outer"] || "transparent"}
+        onPress={() => onPress("fill-top-outer")}
       />
-       <Rect // Bottom Outer Area
+      <Rect // Bottom Outer Area
         id="bottom-outer"
         x="0"
         y={courtHeight / 2}
         width={courtWidth}
         height={courtHeight / 2}
-        fill={fillColors['fill-bottom-outer'] || 'transparent'}
-        onPress={() => onPress('fill-bottom-outer')}
+        fill={fillColors["fill-bottom-outer"] || "transparent"}
+        onPress={() => onPress("fill-bottom-outer")}
       />
       <Path // Top 3-Point Area
         d={top3ptAreaPath}
-        fill={fillColors['fill-top-3pt-area'] || 'transparent'}
-        onPress={() => onPress('fill-top-3pt-area')}
+        fill={fillColors["fill-top-3pt-area"] || "transparent"}
+        onPress={() => onPress("fill-top-3pt-area")}
       />
       <Path // Bottom 3-Point Area
         d={bottom3ptAreaPath}
-        fill={fillColors['fill-bottom-3pt-area'] || 'transparent'}
-        onPress={() => onPress('fill-bottom-3pt-area')}
+        fill={fillColors["fill-bottom-3pt-area"] || "transparent"}
+        onPress={() => onPress("fill-bottom-3pt-area")}
       />
       <Rect // Top Key
         id="top-key"
@@ -158,25 +204,25 @@ const BasketballCourt = ({
         y="0"
         width={keyWidth}
         height={keyHeight}
-        fill={fillColors['fill-top-key'] || 'transparent'}
-        onPress={() => onPress('fill-top-key')}
+        fill={fillColors["fill-top-key"] || "transparent"}
+        onPress={() => onPress("fill-top-key")}
       />
-       <Rect // Bottom Key
+      <Rect // Bottom Key
         id="bottom-key"
         x={(courtWidth - keyWidth) / 2}
         y={courtHeight - keyHeight}
         width={keyWidth}
         height={keyHeight}
-        fill={fillColors['fill-bottom-key'] || 'transparent'}
-        onPress={() => onPress('fill-bottom-key')}
+        fill={fillColors["fill-bottom-key"] || "transparent"}
+        onPress={() => onPress("fill-bottom-key")}
       />
       <Circle // Center Circle
         id="center-circle"
         cx={courtWidth / 2}
         cy={courtHeight / 2}
         r={centerCircleRadius}
-        fill={fillColors['fill-center-circle'] || 'transparent'}
-        onPress={() => onPress('fill-center-circle')}
+        fill={fillColors["fill-center-circle"] || "transparent"}
+        onPress={() => onPress("fill-center-circle")}
       />
     </Svg>
   );

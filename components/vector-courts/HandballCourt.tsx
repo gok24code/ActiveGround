@@ -1,7 +1,14 @@
 import React from "react";
 import Svg, { Path, Rect } from "react-native-svg";
 
-const HandballCourt = ({
+interface HandballCourtProps {
+  onPress: (areaId: string) => void;
+  fillColors?: Record<string, string>;
+  width?: string;
+  height?: string;
+}
+
+const HandballCourt: React.FC<HandballCourtProps> = ({
   onPress,
   fillColors = {},
   width = "100%",
@@ -79,14 +86,14 @@ const HandballCourt = ({
         fill="none"
       />
       <Path // Bottom Penalty Mark
-        d={`M ${courtWidth / 2 - 10} ${
-          courtHeight - penaltyLineOffset
-        } H ${courtWidth / 2 + 10}`}
+        d={`M ${courtWidth / 2 - 10} ${courtHeight - penaltyLineOffset} H ${
+          courtWidth / 2 + 10
+        }`}
         stroke="white"
         strokeWidth="2"
         fill="none"
       />
-       <Rect // Bottom Goal
+      <Rect // Bottom Goal
         x={(courtWidth - goalHeight) / 2}
         y={courtHeight - 2}
         width={goalHeight}
@@ -101,35 +108,35 @@ const HandballCourt = ({
         y="0"
         width={courtWidth}
         height={goalAreaOffset}
-        fill={fillColors['fill-top-goal-area'] || 'transparent'}
-        onPress={() => onPress('fill-top-goal-area')}
+        fill={fillColors["fill-top-goal-area"] || "transparent"}
+        onPress={() => onPress("fill-top-goal-area")}
       />
-       <Rect // Top Play Area
+      <Rect // Top Play Area
         id="top-play-area"
         x="0"
         y={goalAreaOffset}
         width={courtWidth}
-        height={halfCourt-goalAreaOffset}
-        fill={fillColors['fill-top-play-area'] || 'transparent'}
-        onPress={() => onPress('fill-top-play-area')}
+        height={halfCourt - goalAreaOffset}
+        fill={fillColors["fill-top-play-area"] || "transparent"}
+        onPress={() => onPress("fill-top-play-area")}
       />
-        <Rect // Bottom Goal Area
+      <Rect // Bottom Goal Area
         id="bottom-goal-area"
         x="0"
         y={halfCourt + halfCourt - goalAreaOffset}
         width={courtWidth}
         height={goalAreaOffset}
-        fill={fillColors['fill-bottom-goal-area'] || 'transparent'}
-        onPress={() => onPress('fill-bottom-goal-area')}
+        fill={fillColors["fill-bottom-goal-area"] || "transparent"}
+        onPress={() => onPress("fill-bottom-goal-area")}
       />
-        <Rect // Bottom Play Area
+      <Rect // Bottom Play Area
         id="bottom-play-area"
         x="0"
         y={halfCourt}
         width={courtWidth}
-        height={halfCourt-goalAreaOffset}
-        fill={fillColors['fill-bottom-play-area'] || 'transparent'}
-        onPress={() => onPress('fill-bottom-play-area')}
+        height={halfCourt - goalAreaOffset}
+        fill={fillColors["fill-bottom-play-area"] || "transparent"}
+        onPress={() => onPress("fill-bottom-play-area")}
       />
     </Svg>
   );
