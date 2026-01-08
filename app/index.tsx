@@ -1,4 +1,5 @@
 import ColorSlider from "@/components/ColorSlider";
+import OpacitySlider from "@/components/OpacitySlider";
 import CourtPreview from "@/components/CourtPreview";
 import DrawingCanvas from "@/components/DrawingCanvas";
 import { Colors, SportColors } from "@/constants/Theme";
@@ -22,10 +23,14 @@ export default function Index() {
   // States for Drawing and Fill modes
   const [isDrawingMode, setDrawingMode] = useState(false);
   const [isFillMode, setFillMode] = useState(false);
-  const [selectedColor, setSelectedColor] = useState("hsla(0, 100%, 50%, 1)"); // Default to a red hue, full opacity
+  const [hue, setHue] = useState(0); // Hue for the color (0-360)
+  const [opacity, setOpacity] = useState(1); // Opacity for the color (0-1)
   const [fillColors, setFillColors] = useState<{
     [sport: string]: { [area: string]: string };
   }>({});
+
+  // Combine hue and opacity to create the final selected color
+  const selectedColor = `hsla(${hue}, 100%, 50%, ${opacity})`;
 
   const colorScheme = useColorScheme();
   const drawingCanvasRef = useRef<any>(null);
@@ -91,6 +96,12 @@ export default function Index() {
   const handleToggleFillMode = () => {
     setFillMode(!isFillMode);
     if (isDrawingMode) setDrawingMode(false);
+    // Set a default opacity for fill mode if not already set by user
+    if (!isFillMode) {
+        setOpacity(0.4);
+    } else {
+        setOpacity(1);
+    }
   };
 
   const handleFill = (areaId: string) => {
@@ -336,12 +347,16 @@ export default function Index() {
           },
         ]}
       >
-        {(isDrawingMode || isCustomMode) && (
-          <ColorSlider onColorChange={setSelectedColor} opacity={1} selectedColor={selectedColor} />
-        )}
-        {isFillMode && !isCustomMode && (
-          <ColorSlider onColorChange={setSelectedColor} opacity={0.4} selectedColor={selectedColor} />
-        )}
+        <OpacitySlider
+            onOpacityChange={setOpacity}
+            hue={hue}
+            opacity={opacity}
+        />
+        <ColorSlider 
+            onHueChange={setHue} 
+            hue={hue}
+            color={selectedColor} 
+        />
       </Animated.View>
 
       {!isCustomMode && (

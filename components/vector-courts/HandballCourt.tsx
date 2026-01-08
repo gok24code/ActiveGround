@@ -1,11 +1,11 @@
 import React from "react";
-import Svg, { Path, Rect } from "react-native-svg";
+import Svg, { Path, Rect, G, Line } from "react-native-svg";
 
 interface HandballCourtProps {
   onPress: (areaId: string) => void;
   fillColors?: Record<string, string>;
-  width?: string;
-  height?: string;
+  width?: string | number;
+  height?: string | number;
 }
 
 const HandballCourt: React.FC<HandballCourtProps> = ({
@@ -16,53 +16,47 @@ const HandballCourt: React.FC<HandballCourtProps> = ({
 }) => {
   const courtWidth = 150;
   const courtHeight = 280;
-  const halfCourt = courtHeight / 2;
+  const centerX = courtWidth / 2;
+  const halfHeight = courtHeight / 2;
 
-  // Dimensions for the curved lines based on the reference image
-  const goalAreaRadius = 55; // Radius for the solid goal area arc
-  const freeThrowRadius = 70; // Radius for the dashed free-throw arc
-  const arcCenterX = courtWidth / 2;
-  const topArcCenterY = 0;
-  const bottomArcCenterY = courtHeight;
-  const penaltyMarkY = 80; // Distance from the goal line to the penalty mark
-  const penaltyMarkLength = 10;
-  const goalLineWidth = 40; // Width of the goal line
+  // Dimensions
+  const goalWidth = 30;
+  const sixMeterStraightWidth = 36;
+  const nineMeterStraightWidth = 44;
 
-  // --- Path Calculations ---
-  const goalAreaArc = (centerY: number, direction: "top" | "bottom") => {
-    const startX = arcCenterX - goalAreaRadius;
-    const endX = arcCenterX + goalAreaRadius;
-    const arcY = centerY === 0 ? goalAreaRadius : courtHeight - goalAreaRadius;
-    const sweepFlag = direction === "top" ? 1 : 0;
-    return `M ${startX} ${arcY} A ${goalAreaRadius} ${goalAreaRadius} 0 0 ${sweepFlag} ${endX} ${arcY}`;
+
+  // Path for the 6m Goal Area LINE
+  const getSixMeterLinePath = (isTop: boolean) => {
+    const y0 = isTop ? 0 : courtHeight;
+    const yRadius = isTop ? 48 : courtHeight - 48;
+    const sweepFlag = isTop ? 0 : 1; // 0 for top, 1 for bottom to make curves inward
+    
+    return `M 18 ${y0} A 45 45 0 0 ${sweepFlag} ${centerX - sixMeterStraightWidth / 2} ${yRadius} L ${centerX + sixMeterStraightWidth / 2} ${yRadius} A 45 45 0 0 ${sweepFlag} ${courtWidth - 18} ${y0}`;
+  };
+  
+  // Path for the 9m Free-throw LINE
+  const getNineMeterLinePath = (isTop: boolean) => {
+    const y0 = isTop ? 0 : courtHeight;
+    const yRadius = isTop ? 72 : courtHeight - 72;
+    const sweepFlag = isTop ? 0 : 1; // 0 for top, 1 for bottom to make curves inward
+
+    return `M 4 ${y0} A 70 70 0 0 ${sweepFlag} ${centerX - nineMeterStraightWidth / 2} ${yRadius} L ${centerX + nineMeterStraightWidth / 2} ${yRadius} A 70 70 0 0 ${sweepFlag} ${courtWidth - 4} ${y0}`;
+  };
+  
+  // Path for the 6m Goal FILL AREA (a closed shape)
+  const getSixMeterFillPath = (isTop: boolean) => {
+    const linePath = getSixMeterLinePath(isTop);
+    const y0 = isTop ? 0 : courtHeight;
+    return `${linePath} L ${courtWidth - 18} ${y0} L 18 ${y0} Z`;
   };
 
-  const freeThrowArc = (centerY: number, direction: "top" | "bottom") => {
-    const startX = arcCenterX - freeThrowRadius;
-    const endX = arcCenterX + freeThrowRadius;
-    const arcY =
-      centerY === 0 ? freeThrowRadius : courtHeight - freeThrowRadius;
-    const sweepFlag = direction === "top" ? 1 : 0;
-    return `M ${startX} ${arcY} A ${freeThrowRadius} ${freeThrowRadius} 0 0 ${sweepFlag} ${endX} ${arcY}`;
+  // Path for the 9m Free-throw Area Path (closed)
+  const getNineMeterFillPath = (isTop: boolean) => {
+    const linePath = getNineMeterLinePath(isTop);
+    const y0 = isTop ? 0 : courtHeight;
+    // Close the D-shape by connecting back to the y0 line
+    return `${linePath} L ${courtWidth - 4} ${y0} L 4 ${y0} Z`;
   };
-
-  // Path for the fillable goal areas
-  const topGoalAreaPath = `M 0 0 H ${courtWidth} V ${goalAreaRadius} ${goalAreaArc(
-    topArcCenterY,
-    "top"
-  )} V 0 Z`;
-  const bottomGoalAreaPath = `M 0 ${courtHeight} H ${courtWidth} V ${
-    courtHeight - goalAreaRadius
-  } ${goalAreaArc(bottomArcCenterY, "bottom")} V ${courtHeight} Z`;
-
-  // Path for the fillable play areas
-  const topPlayAreaPath = `M 0 ${goalAreaRadius} H ${courtWidth} V ${halfCourt} H 0 V ${goalAreaRadius} ${goalAreaArc(
-    topArcCenterY,
-    "top"
-  )} Z`;
-  const bottomPlayAreaPath = `M 0 ${halfCourt} H ${courtWidth} V ${
-    courtHeight - goalAreaRadius
-  } ${goalAreaArc(bottomArcCenterY, "bottom")} V ${halfCourt} H 0 Z`;
 
   return (
     <Svg
@@ -70,110 +64,41 @@ const HandballCourt: React.FC<HandballCourtProps> = ({
       height={height}
       viewBox={`0 0 ${courtWidth} ${courtHeight}`}
     >
-      {/* Court Lines */}
-      <Rect // Court Outline
-        x="0"
-        y="0"
-        width={courtWidth}
-        height={courtHeight}
-        stroke="white"
-        strokeWidth="2"
-        fill="none"
-      />
-      <Path // Center Line
-        d={`M 0 ${halfCourt} H ${courtWidth}`}
-        stroke="white"
-        strokeWidth="2"
-        fill="none"
-      />
+      {/* 1. COURT LINES (Rendered first, will be behind the fill) */}
+      <G id="court-lines" pointerEvents="none">
+        <Rect x="0" y="0" width={courtWidth} height={courtHeight} stroke="white" strokeWidth="1.5" fill="none" />
+        <Line x1="0" y1={halfHeight} x2={courtWidth} y2={halfHeight} stroke="white" strokeWidth="1.5" />
 
-      {/* Top Half Lines */}
-      <Path // Top Goal Area Line (Solid Arc)
-        d={goalAreaArc(topArcCenterY, "top")}
-        stroke="white"
-        strokeWidth="2"
-        fill="none"
-      />
-      <Path // Top Free-throw Line (Dashed Arc)
-        d={freeThrowArc(topArcCenterY, "top")}
-        stroke="white"
-        strokeWidth="2"
-        strokeDasharray="3,3"
-        fill="none"
-      />
-      <Path // Top Penalty Mark (Tick)
-        d={`M ${arcCenterX - penaltyMarkLength / 2} ${penaltyMarkY} H ${
-          arcCenterX + penaltyMarkLength / 2
-        }`}
-        stroke="white"
-        strokeWidth="2"
-        fill="none"
-      />
-      <Path // Top Goal Line
-        d={`M ${arcCenterX - goalLineWidth / 2} 1 H ${
-          arcCenterX + goalLineWidth / 2
-        }`}
-        stroke="white"
-        strokeWidth="2"
-        fill="none"
-      />
+        {/* Top Half Lines */}
+        <Path d={getSixMeterPath(true)} stroke="white" strokeWidth="1.5" fill="none" />
+        <Path d={getNineMeterPath(true)} stroke="white" strokeWidth="1.5" strokeDasharray="5,4" fill="none" />
+        <Line x1={centerX - 6} y1="58" x2={centerX + 6} y2="58" stroke="white" strokeWidth="2" />
+        <Line x1={centerX - 3} y1="32" x2={centerX + 3} y2="32" stroke="white" strokeWidth="1.5" />
+        <Line x1={centerX - goalWidth / 2} y1="0.8" x2={centerX + goalWidth / 2} y2="0.8" stroke="white" strokeWidth="3" />
+        
+        {/* Bottom Half Lines */}
+        <Path d={getSixMeterPath(false)} stroke="white" strokeWidth="1.5" fill="none" />
+        <Path d={getNineMeterPath(false)} stroke="white" strokeWidth="1.5" strokeDasharray="5,4" fill="none" />
+        <Line x1={centerX - 6} y1={courtHeight - 58} x2={centerX + 6} y2={courtHeight - 58} stroke="white" strokeWidth="2" />
+        <Line x1={centerX - 3} y1={courtHeight - 32} x2={centerX + 3} y2={courtHeight - 32} stroke="white" strokeWidth="1.5" />
+        <Line x1={centerX - goalWidth / 2} y1={courtHeight - 0.8} x2={centerX + goalWidth / 2} y2={courtHeight - 0.8} stroke="white" strokeWidth="3" />
+      </G>
 
-      {/* Bottom Half Lines */}
-      <Path // Bottom Goal Area Line (Solid Arc)
-        d={goalAreaArc(bottomArcCenterY, "bottom")}
-        stroke="white"
-        strokeWidth="2"
-        fill="none"
-      />
-      <Path // Bottom Free-throw Line (Dashed Arc)
-        d={freeThrowArc(bottomArcCenterY, "bottom")}
-        stroke="white"
-        strokeWidth="2"
-        strokeDasharray="3,3"
-        fill="none"
-      />
-      <Path // Bottom Penalty Mark (Tick)
-        d={`M ${arcCenterX - penaltyMarkLength / 2} ${
-          courtHeight - penaltyMarkY
-        } H ${arcCenterX + penaltyMarkLength / 2}`}
-        stroke="white"
-        strokeWidth="2"
-        fill="none"
-      />
-      <Path // Bottom Goal Line
-        d={`M ${arcCenterX - goalLineWidth / 2} ${courtHeight - 1} H ${
-          arcCenterX + goalLineWidth / 2
-        }`}
-        stroke="white"
-        strokeWidth="2"
-        fill="none"
-      />
-
-      {/* Fillable Areas */}
-      <Path // Top Goal Area
-        id="top-goal-area"
-        d={topGoalAreaPath}
-        fill={fillColors["fill-top-goal-area"] || "transparent"}
-        onPress={() => onPress("fill-top-goal-area")}
-      />
-      <Path // Top Play Area
-        id="top-play-area"
-        d={topPlayAreaPath}
-        fill={fillColors["fill-top-play-area"] || "transparent"}
-        onPress={() => onPress("fill-top-play-area")}
-      />
-      <Path // Bottom Goal Area
-        id="bottom-goal-area"
-        d={bottomGoalAreaPath}
-        fill={fillColors["fill-bottom-goal-area"] || "transparent"}
-        onPress={() => onPress("fill-bottom-goal-area")}
-      />
-      <Path // Bottom Play Area
-        id="bottom-play-area"
-        d={bottomPlayAreaPath}
-        fill={fillColors["fill-bottom-play-area"] || "transparent"}
-        onPress={() => onPress("fill-bottom-play-area")}
-      />
+      {/* 2. FILLABLE AREAS (Rendered last, on top of lines) */}
+      <G id="fillable-areas">
+        <Rect
+          id="fill-top-half"
+          x="0" y="0" width={courtWidth} height={halfHeight}
+          fill={fillColors["fill-top-half"] || "transparent"}
+          onPress={() => onPress("fill-top-half")}
+        />
+        <Rect
+          id="fill-bottom-half"
+          x="0" y={halfHeight} width={courtWidth} height={halfHeight}
+          fill={fillColors["fill-bottom-half"] || "transparent"}
+          onPress={() => onPress("fill-bottom-half")}
+        />
+      </G>
     </Svg>
   );
 };

@@ -1,38 +1,39 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import { View, StyleSheet, PanResponder, useColorScheme } from "react-native";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import * as Haptics from "expo-haptics";
 
-type ColorSliderProps = {
-  onHueChange: (hue: number) => void;
+type OpacitySliderProps = {
+  onOpacityChange: (opacity: number) => void;
   style?: any;
-  color: string;
   hue: number;
+  opacity: number;
 };
 
-const ColorSlider = ({
-  onHueChange,
+const OpacitySlider = ({
+  onOpacityChange,
   style,
-  color,
   hue,
-}: ColorSliderProps) => {
+  opacity,
+}: OpacitySliderProps) => {
   const sliderWidth = useRef(0);
   const colorScheme = useColorScheme();
   const [indicatorX, setIndicatorX] = useState(0);
 
+  // Update indicator position when opacity changes externally or sliderWidth becomes known
   useEffect(() => {
     if (sliderWidth.current > 0) {
-      const newX = (hue / 360) * sliderWidth.current;
+      const newX = opacity * sliderWidth.current;
       setIndicatorX(newX);
     }
-  }, [hue, sliderWidth.current]);
+  }, [opacity, sliderWidth.current]);
 
   const handleMove = (xPosition: number) => {
     const x = Math.max(0, Math.min(xPosition, sliderWidth.current));
     if (sliderWidth.current > 0) {
-      const newHue = (x / sliderWidth.current) * 360;
-      onHueChange(newHue);
-      setIndicatorX(x);
+      const newOpacity = x / sliderWidth.current;
+      onOpacityChange(newOpacity);
+      setIndicatorX(x); // Update indicator position immediately on move
     }
   };
 
@@ -50,6 +51,9 @@ const ColorSlider = ({
     })
   ).current;
 
+  const indicatorColor = `hsla(${hue}, 100%, 50%, ${opacity})`;
+
+
   const styles = StyleSheet.create({
     slider: {
       width: "100%",
@@ -59,6 +63,7 @@ const ColorSlider = ({
       borderColor: colorScheme === "dark" ? "#555" : "#ccc",
       overflow: "hidden",
       justifyContent: "center",
+      marginBottom: 20, // Add margin to separate from ColorSlider
     },
     indicator: {
       position: "absolute",
@@ -67,8 +72,8 @@ const ColorSlider = ({
       borderRadius: 10,
       borderWidth: 2,
       borderColor: colorScheme === "dark" ? "#FFF" : "#000",
-      backgroundColor: color,
-      transform: [{ translateX: -10 }],
+      backgroundColor: indicatorColor,
+      transform: [{ translateX: -10 }], // Center the indicator
     },
   });
 
@@ -79,28 +84,24 @@ const ColorSlider = ({
       onLayout={(event) => {
         if (event.nativeEvent.layout.width !== sliderWidth.current) {
             sliderWidth.current = event.nativeEvent.layout.width;
-            const newX = (hue / 360) * sliderWidth.current;
+            // Recalculate indicator position if width changes
+            const newX = opacity * sliderWidth.current;
             setIndicatorX(newX);
         }
       }}
     >
       <Svg width="100%" height="100%">
         <Defs>
-          <LinearGradient id="grad" x1="0%" y1="0" x2="100%" y2="0">
-            <Stop offset="0" stopColor="#ff0000" />
-            <Stop offset="0.17" stopColor="#ffff00" />
-            <Stop offset="0.34" stopColor="#00ff00" />
-            <Stop offset="0.51" stopColor="#00ffff" />
-            <Stop offset="0.68" stopColor="#0000ff" />
-            <Stop offset="0.85" stopColor="#ff00ff" />
-            <Stop offset="1" stopColor="#ff0000" />
+          <LinearGradient id="opacityGrad" x1="0%" y1="0" x2="100%" y2="0">
+            <Stop offset="0" stopColor="black" />
+            <Stop offset="1" stopColor="white" />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#grad)" />
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#opacityGrad)" />
       </Svg>
       <View style={[styles.indicator, { left: indicatorX }]} />
     </View>
   );
 };
 
-export default ColorSlider;
+export default OpacitySlider;

@@ -123,29 +123,26 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
       height={height}
       viewBox={`0 0 ${courtWidth} ${courtHeight}`}
     >
-      {/* --- 1. ZEMİN VE PARKE (DEĞİŞTİRİLMEDİ) --- */}
+      {/* --- 1. ZEMİN VE PARKE (DİKEY OUTLINE) --- */}
       <Defs>
         <Pattern
           id="parquet-pattern-bball"
           x="0"
           y="0"
           width="20"
-          height="10"
+          height="20"
           patternUnits="userSpaceOnUse"
-          viewBox="0 0 20 10"
+          viewBox="0 0 20 20"
         >
-          <Rect x="0" y="0" width="20" height="10" fill={woodBaseColor} />
-          <Path d="M0 0 L20 0" stroke={woodLineColor} strokeWidth="0.5" />
-          <Path d="M0 5 L20 5" stroke={woodLineColor} strokeWidth="0.5" />
-          <Path d="M10 0 L10 5" stroke={woodLineColor} strokeWidth="0.5" />
-          <Path d="M0 5 L0 10" stroke={woodLineColor} strokeWidth="0.5" />
-          <Path d="M20 5 L20 10" stroke={woodLineColor} strokeWidth="0.5" />
-          <Path
-            d="M2 2 H8 M12 7 H18"
-            stroke={woodLineColor}
-            strokeWidth="0.2"
-            opacity="0.5"
-          />
+          <Rect x="0" y="0" width="20" height="20" fill="transparent" />
+          {/* Vertical lines for all planks */}
+          <Path d="M0 0 V20" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          <Path d="M10 0 V20" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          <Path d="M20 0 V20" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          {/* Horizontal lines creating the stagger */}
+          <Path d="M0 10 H10" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          <Path d="M10 0 H20" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          <Path d="M10 20 H20" stroke="white" strokeWidth="0.5" opacity="0.3" />
         </Pattern>
       </Defs>
       <Rect
@@ -235,23 +232,7 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
           strokeWidth="2"
           fill="none"
         />
-        {/* Pota Çemberi ve Pano */}
-        <Rect
-          x={(courtWidth - 24) / 2}
-          y={hoopCenterY - 3}
-          width="24"
-          height="1"
-          fill="white"
-        />{" "}
-        {/* Pano */}
-        <Circle
-          cx={courtWidth / 2}
-          cy={hoopCenterY}
-          r={3}
-          stroke="white"
-          strokeWidth="2"
-          fill="none"
-        />
+        {/* Pota Çemberi ve Pano (KALDIRILDI) */}
         {/* Lane Hash Marks (Koridor Çentikleri - Üst) */}
         {laneTicks.map((y, i) => (
           <React.Fragment key={`top-ticks-${i}`}>
@@ -320,22 +301,7 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
           strokeWidth="2"
           fill="none"
         />
-        {/* Pota Çemberi ve Pano */}
-        <Rect
-          x={(courtWidth - 24) / 2}
-          y={courtHeight - hoopCenterY + 2}
-          width="24"
-          height="1"
-          fill="white"
-        />
-        <Circle
-          cx={courtWidth / 2}
-          cy={courtHeight - hoopCenterY}
-          r={3}
-          stroke="white"
-          strokeWidth="2"
-          fill="none"
-        />
+        {/* Pota Çemberi ve Pano (KALDIRILDI) */}
         {/* Lane Hash Marks (Koridor Çentikleri - Alt) */}
         {laneTicks.map((y, i) => (
           <React.Fragment key={`bottom-ticks-${i}`}>
@@ -374,27 +340,11 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         />
       </G>
 
-      {/* --- 3. TIKLANABİLİR DOLGU ALANLARI --- */}
-      {/* Not: Dolgu alanlarını çizgilerin mantığına göre basitleştirilmiş şekiller 
-          olarak tutuyoruz, böylece tıklama deneyimi kolay olur.
-      */}
+      {/* --- 3. TIKLANABİLİR DOLGU ALANLARI (Yeniden Sıralandı) --- */}
+      {/* Not: En büyük alanlar önce çizilir, böylece küçük alanlar üstte kalır ve doğru tıklamayı alır. */}
 
-      {/* Top Half Fill Areas */}
-      <Rect // Top Key
-        id="top-key"
-        x={keyLeftX}
-        y="0"
-        width={keyWidth}
-        height={keyHeight}
-        fill={fillColors["fill-top-key"] || "transparent"}
-        onPress={() => onPress("fill-top-key")}
-      />
-      <Path // Top 3-Point Area
-        d={top3ptAreaPath}
-        fill={fillColors["fill-top-3pt-area"] || "transparent"}
-        onPress={() => onPress("fill-top-3pt-area")}
-      />
-      <Rect // Top Outer Area (Basitleştirilmiş, 3 sayı arkası)
+      {/* Outer Areas (Rendered First) */}
+      <Rect // Top Outer Area
         id="top-outer"
         x="0"
         y="0"
@@ -402,22 +352,6 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         height={courtHeight / 2}
         fill={fillColors["fill-top-outer"] || "transparent"}
         onPress={() => onPress("fill-top-outer")}
-      />
-
-      {/* Bottom Half Fill Areas */}
-      <Rect // Bottom Key
-        id="bottom-key"
-        x={keyLeftX}
-        y={courtHeight - keyHeight}
-        width={keyWidth}
-        height={keyHeight}
-        fill={fillColors["fill-bottom-key"] || "transparent"}
-        onPress={() => onPress("fill-bottom-key")}
-      />
-      <Path // Bottom 3-Point Area
-        d={bottom3ptAreaPath}
-        fill={fillColors["fill-bottom-3pt-area"] || "transparent"}
-        onPress={() => onPress("fill-bottom-3pt-area")}
       />
       <Rect // Bottom Outer Area
         id="bottom-outer"
@@ -429,7 +363,61 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         onPress={() => onPress("fill-bottom-outer")}
       />
 
-      {/* Center Circle (En üstte olması daha iyi tıklanabilirlik sağlar) */}
+      {/* 3-Point Areas (On Top of Outer) */}
+      <Path // Top 3-Point Area
+        d={top3ptAreaPath}
+        fill={fillColors["fill-top-3pt-area"] || "transparent"}
+        onPress={() => onPress("fill-top-3pt-area")}
+      />
+      <Path // Bottom 3-Point Area
+        d={bottom3ptAreaPath}
+        fill={fillColors["fill-bottom-3pt-area"] || "transparent"}
+        onPress={() => onPress("fill-bottom-3pt-area")}
+      />
+
+      {/* Key Areas (On Top of 3-Point) */}
+      <Rect // Top Key
+        id="top-key"
+        x={keyLeftX}
+        y="0"
+        width={keyWidth}
+        height={keyHeight}
+        fill={fillColors["fill-top-key"] || "transparent"}
+        onPress={() => onPress("fill-top-key")}
+      />
+      <Rect // Bottom Key
+        id="bottom-key"
+        x={keyLeftX}
+        y={courtHeight - keyHeight}
+        width={keyWidth}
+        height={keyHeight}
+        fill={fillColors["fill-bottom-key"] || "transparent"}
+        onPress={() => onPress("fill-bottom-key")}
+      />
+
+      {/* Restricted Areas (On Top of Key) */}
+      <Path
+        id="fill-top-restricted-area"
+        d={`M ${
+          courtWidth / 2 - restrictedRadius
+        },${hoopCenterY} A ${restrictedRadius},${restrictedRadius} 0 0 1 ${
+          courtWidth / 2 + restrictedRadius
+        },${hoopCenterY}`}
+        fill={fillColors["fill-top-restricted-area"] || "transparent"}
+        onPress={() => onPress("fill-top-restricted-area")}
+      />
+      <Path
+        id="fill-bottom-restricted-area"
+        d={`M ${courtWidth / 2 - restrictedRadius},${
+          courtHeight - hoopCenterY
+        } A ${restrictedRadius},${restrictedRadius} 0 0 0 ${
+          courtWidth / 2 + restrictedRadius
+        },${courtHeight - hoopCenterY}`}
+        fill={fillColors["fill-bottom-restricted-area"] || "transparent"}
+        onPress={() => onPress("fill-bottom-restricted-area")}
+      />
+
+      {/* Center Circle (Rendered Last to be on Top) */}
       <Circle
         id="center-circle"
         cx={courtWidth / 2}
