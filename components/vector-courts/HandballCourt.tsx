@@ -1,5 +1,5 @@
 import React from "react";
-import Svg, { G, Line, Path, Rect } from "react-native-svg";
+import Svg, { G, Line, Path, Rect, Circle } from "react-native-svg";
 
 interface HandballCourtProps {
   onPress: (areaId: string) => void;
@@ -43,11 +43,11 @@ const HandballCourt: React.FC<HandballCourtProps> = ({
     const yRadius = isTop ? 72 : courtHeight - 72;
     const sweepFlag = isTop ? 0 : 1; // 0 for top, 1 for bottom to make curves inward
 
-    return `M 4 ${y0} A 70 70 0 0 ${sweepFlag} ${
+    return `M 0 ${y0} A 70 70 0 0 ${sweepFlag} ${
       centerX - nineMeterStraightWidth / 2
     } ${yRadius} L ${
       centerX + nineMeterStraightWidth / 2
-    } ${yRadius} A 70 70 0 0 ${sweepFlag} ${courtWidth - 4} ${y0}`;
+    } ${yRadius} A 70 70 0 0 ${sweepFlag} ${courtWidth} ${y0}`;
   };
 
   // Path for the 6m Goal FILL AREA (a closed shape)
@@ -69,7 +69,7 @@ const HandballCourt: React.FC<HandballCourtProps> = ({
     <Svg
       width={width}
       height={height}
-      viewBox={`0 0 ${courtWidth} ${courtHeight}`}
+      viewBox={`-10 -2 ${courtWidth + 20} ${courtHeight + 4}`}
     >
       {/* 1. COURT LINES (Rendered first, will be behind the fill) */}
       <G id="court-lines" pointerEvents="none">
@@ -85,11 +85,25 @@ const HandballCourt: React.FC<HandballCourtProps> = ({
         <Line
           x1="0"
           y1={halfHeight}
+          x2={centerX - 20}
+          y2={halfHeight}
+          stroke="white"
+          strokeWidth="1.5"
+        />
+        <Line
+          x1={centerX + 20}
+          y1={halfHeight}
           x2={courtWidth}
           y2={halfHeight}
           stroke="white"
           strokeWidth="1.5"
         />
+
+
+
+        {/* Player Entry Lines - Left */}
+        <Line x1="-10" y1={halfHeight - 30} x2="0" y2={halfHeight - 30} stroke="white" strokeWidth="1.5" />
+        <Line x1="-10" y1={halfHeight + 30} x2="0" y2={halfHeight + 30} stroke="white" strokeWidth="1.5" />
 
         {/* Top Half Lines */}
         <Path
@@ -122,12 +136,12 @@ const HandballCourt: React.FC<HandballCourtProps> = ({
           strokeWidth="1.5"
         />
         <Line
-          x1={centerX - goalWidth / 2}
-          y1="0.8"
-          x2={centerX + goalWidth / 2}
-          y2="0.8"
+          x1={centerX - goalWidth / 2 - 4}
+          y1="-2"
+          x2={centerX + goalWidth / 2 + 4}
+          y2="-2"
           stroke="white"
-          strokeWidth="3"
+          strokeWidth="5"
         />
 
         {/* Bottom Half Lines */}
@@ -161,17 +175,46 @@ const HandballCourt: React.FC<HandballCourtProps> = ({
           strokeWidth="1.5"
         />
         <Line
-          x1={centerX - goalWidth / 2}
-          y1={courtHeight - 0.8}
-          x2={centerX + goalWidth / 2}
-          y2={courtHeight - 0.8}
+          x1={centerX - goalWidth / 2 - 4}
+          y1={courtHeight + 2}
+          x2={centerX + goalWidth / 2 + 4}
+          y2={courtHeight + 2}
           stroke="white"
-          strokeWidth="3"
+          strokeWidth="5"
         />
       </G>
 
       {/* 2. FILLABLE AREAS (Rendered last, on top of lines) */}
       <G id="fillable-areas">
+        {/* Fillable 6m Goal Area - Top */}
+        <Path
+          id="fill-six-meter-top"
+          d={getSixMeterFillPath(true)}
+          fill={fillColors["fill-six-meter-top"] || "transparent"}
+          onPress={() => onPress("fill-six-meter-top")}
+        />
+        {/* Fillable 9m Free-throw Area - Top */}
+        <Path
+          id="fill-nine-meter-top"
+          d={getNineMeterFillPath(true)}
+          fill={fillColors["fill-nine-meter-top"] || "transparent"}
+          onPress={() => onPress("fill-nine-meter-top")}
+        />
+
+        {/* Fillable 6m Goal Area - Bottom */}
+        <Path
+          id="fill-six-meter-bottom"
+          d={getSixMeterFillPath(false)}
+          fill={fillColors["fill-six-meter-bottom"] || "transparent"}
+          onPress={() => onPress("fill-six-meter-bottom")}
+        />
+        {/* Fillable 9m Free-throw Area - Bottom */}
+        <Path
+          id="fill-nine-meter-bottom"
+          d={getNineMeterFillPath(false)}
+          fill={fillColors["fill-nine-meter-bottom"] || "transparent"}
+          onPress={() => onPress("fill-nine-meter-bottom")}
+        />
         <Rect
           id="fill-top-half"
           x="0"
@@ -189,6 +232,17 @@ const HandballCourt: React.FC<HandballCourtProps> = ({
           height={halfHeight}
           fill={fillColors["fill-bottom-half"] || "transparent"}
           onPress={() => onPress("fill-bottom-half")}
+        />
+        {/* Fillable Center Circle */}
+        <Circle
+          id="fill-center-circle"
+          cx={centerX}
+          cy={halfHeight}
+          r="20"
+          stroke="white"
+          strokeWidth="1.5"
+          fill={fillColors["fill-center-circle"] || "transparent"}
+          onPress={() => onPress("fill-center-circle")}
         />
       </G>
     </Svg>

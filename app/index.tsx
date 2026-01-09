@@ -188,7 +188,7 @@ export default function Index() {
       borderWidth: 2,
       borderRadius: 10,
       margin: 20,
-      borderColor: colorScheme === "dark" ? Colors.dark.text : Colors.light.text, // Static border color
+      borderColor: colorScheme === "dark" ? Colors.dark.background : Colors.light.background, // Match background color
       backgroundColor:
         colorScheme === "dark"
           ? Colors.dark.background
